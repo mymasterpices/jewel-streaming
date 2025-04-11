@@ -7,7 +7,6 @@ const LocalStrategy = require('passport-local').Strategy;
 passport.use(new LocalStrategy(async (USERNAME, password, done) => {
     //authentication logic
     try {
-        // console.log('Received credentials: ', USERNAME, password);
         //check if user exists and password matches
         const user = await User.findOne({ username: USERNAME });
         if (!user)
@@ -25,6 +24,5 @@ passport.use(new LocalStrategy(async (USERNAME, password, done) => {
         return done(error);
     }
 }));
-
 
 module.exports = passport;

@@ -30,11 +30,6 @@ app.listen(port, () => console.log(`Server is running on port ${port}`));
 app.get('/', (req, res) => {
     res.send("Welcome to Jewel Streaming!");
 });
-// app.get('/', passport.authenticate('local', { session: false }), (req, res) => {
-//     res.send("Welcome to Jewel Streaming!");
-// });
-
-
 
 //import usersRouter
 const usersRouter = require('./routers/usersRoutes');
