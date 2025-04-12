@@ -22,9 +22,9 @@ app.use(express.static(path.join(__dirname, 'browser')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Redirect all other routes to the Angular app's index.html
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'browser/index.html'));
-// });
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'browser/index.html'));
+});
 
 
 //middleware function for log generation
@@ -40,9 +40,6 @@ app.use(express.static('uploads'));
 
 app.listen(port, () => console.log(`Server is running on port ${port}`));
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'browser/index.html'));
-});
 
 //import usersRouter
 const usersRouter = require('./routers/usersRoutes');
