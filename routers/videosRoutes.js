@@ -26,6 +26,9 @@ router.get('/', async (req, res) => {
 
     try {
         const videos = await Video.find({});
+        if (videos.length === 0) {
+            return res.status(404).json({ message: 'No videos found' });
+        }
         res.status(200).json(videos);
     } catch (error) {
         console.error('Error fetching videos:', error);
