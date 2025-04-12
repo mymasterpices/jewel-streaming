@@ -12,7 +12,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(express.json());
 const db = require('./db');
-const port = process.env.port;
+const port = process.env.PORT || 5000;
 
 //middleware function for log generation
 const logRequest = (req, res, next) => {
