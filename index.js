@@ -1,47 +1,37 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-
+const fs = require('fs');
 require('dotenv').config();
+
 const app = express();
-app.use(cors());
-app.use(express.static('uploads'));
-
-const passport = require('./auth');
-
-const bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.use(express.json());
-const db = require('./db');
 const port = process.env.PORT || 5000;
 
-// Serve static files from the Angular app's dist folder
-app.use(express.static(path.join(__dirname, 'browser')));
+// Ensure uploads directory exists
+const uploadsPath = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath);
+}
 
-// Serve static files from the uploads folder
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Middleware setup
+app.use(cors());
+app.use(express.json());
+const db = require('./db');
+app.use(express.static(path.join(__dirname, 'browser'))); // Serve Angular frontend
+app.use('/uploads', express.static(uploadsPath)); // Serve uploaded files
 
-// Redirect all other routes to the Angular app's index.html
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'browser/index.html'));
-});
-
-
-//middleware function for log generation
+// Logger middleware
 const logRequest = (req, res, next) => {
     console.log(`[${new Date().toLocaleDateString()}] Request made to ${req.url}`);
     next();
-}
+};
 app.use(logRequest);
-//initialize middleware passport
+
+// Passport auth middleware
+const passport = require('./auth');
 app.use(passport.initialize());
-app.use(express.static('uploads'));
 
-
-app.listen(port, () => console.log(`Server is running on port ${port}`));
-
-
-//import usersRouter
+// Routers
 const usersRouter = require('./routers/usersRoutes');
 const categoriesRouter = require('./routers/categoriesRoutes');
 const videosRouter = require('./routers/videosRoutes');
@@ -50,5 +40,12 @@ app.use('/api/users', usersRouter);
 app.use('/api/category', categoriesRouter);
 app.use('/api/video', videosRouter);
 
+// Wildcard route to serve Angular app
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'browser/index.html'));
+});
 
-
+// Start server
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
