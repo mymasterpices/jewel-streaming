@@ -8,6 +8,7 @@ const crypto = require('crypto');
 
 const Video = require('../models/videoSchema');
 const shareLink = require('../models/shareLinkSchema');
+const { jwtAuthentication, generateToken } = require('./../middleware/jwtAuthorization');
 
 // Storage configuration for multer
 const storage = multer.diskStorage({
@@ -22,7 +23,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // GET all videos
-router.get('/', async (req, res) => {
+router.get('/', jwtAuthentication, async (req, res) => {
     try {
         const videos = await Video.find({});
         if (videos.length === 0) {
@@ -36,19 +37,25 @@ router.get('/', async (req, res) => {
 });
 
 // GET videos by category
-router.get('/:category', async (req, res) => {
+router.get('/:category', jwtAuthentication, async (req, res) => {
     try {
         const category = req.params.category;
+        if (!category) {
+            return res.status(400).json({ message: 'Category is required' });
+        }
         const videos = await Video.find({ category });
-        res.status(200).json(videos);
+        return res.status(200).json(videos);
+
     } catch (error) {
         console.error('Error fetching videos by category:', error);
-        res.status(500).json({ message: 'Internal server error', error: error.message });
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 });
 
+
+
 // POST new video
-router.post('/', upload.single('videoUpload'), async (req, res) => {
+router.post('/', jwtAuthentication, upload.single('videoUpload'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'Please upload a video file' });
@@ -133,9 +140,9 @@ router.get('/share-one/:id', async (req, res) => {
 });
 
 // POST generate shareable link
-router.post('/generate-shareable-link', async (req, res) => {
+router.post('/generate-shareable-link', jwtAuthentication, async (req, res) => {
     try {
-        const { videoIds, expiryDate } = req.body;
+        const { videoIds, expiryDate, customerName } = req.body;
 
         if (!videoIds || !Array.isArray(videoIds) || videoIds.length === 0) {
             return res.status(400).json({ message: 'Video IDs are required and must be an array' });
@@ -150,6 +157,7 @@ router.post('/generate-shareable-link', async (req, res) => {
         const newShareLink = new shareLink({
             token,
             videoIds,
+            customerName,
             expiryDate: new Date(expiryDate),
             createdAt: new Date()
         });
@@ -184,6 +192,37 @@ router.get('/share/:token', async (req, res) => {
     } catch (error) {
         console.error('Error fetching shared videos:', error);
         res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+});
+
+router.delete('/:id', jwtAuthentication, async (req, res) => {
+    try {
+        const videoId = req.params.id;
+
+        // Find the video record to get the file path
+        const video = await Video.findById(videoId);
+        if (!video) {
+            return res.status(404).json({ error: 'Video not found' });
+        }
+
+        // Delete the video file from the filesystem
+        const videoPath = path.join(__dirname, '..', video.videoUpload);
+        if (fs.existsSync(videoPath)) {
+            fs.unlinkSync(videoPath); // Synchronously delete the file
+        } else {
+            console.warn(`File not found: ${videoPath}`);
+        }
+
+        // Delete the video record from the database
+        const deletedVideo = await Video.findByIdAndDelete(videoId);
+
+        res.status(200).json({
+            message: 'Video deleted successfully',
+            video: deletedVideo
+        });
+    } catch (error) {
+        console.error('Error deleting video:', error);
+        res.status(500).json({ error: 'Error in deleting video' });
     }
 });
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('./../models/userSchema');
-const { jwtAuthentication, generateToken } = require('./../jwt');
+const { jwtAuthentication, generateToken } = require('./../middleware/jwtAuthorization');
 
 
 router.post('/signup', async (req, res) => {
@@ -12,7 +12,8 @@ router.post('/signup', async (req, res) => {
 
         const payLoad = {
             id: result._id,
-            username: result.username
+            username: result.username,
+            role: result.role
         }
         const token = generateToken(payLoad);
         console.log('Token saved: ' + token);
@@ -76,7 +77,7 @@ router.get('/profile', jwtAuthentication, async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', jwtAuthentication, async (req, res) => {
     try {
         const data = await User.find();
         console.log('data fetched');
@@ -90,7 +91,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', jwtAuthentication, async (req, res) => {
     try {
         const userId = req.params.id;
         const userUpdatedData = req.body;
@@ -118,7 +119,7 @@ router.put('/:id', async (req, res) => {
 });
 
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', jwtAuthentication, async (req, res) => {
     try {
         const userId = req.params.id;
 

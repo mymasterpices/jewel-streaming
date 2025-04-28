@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('./../models/categoriesSchema');
+const { jwtAuthentication, generateToken } = require('./../middleware/jwtAuthorization');
 
 
-router.post('/', async (req, res) => {
+router.post('/', jwtAuthentication, async (req, res) => {
     try {
         const data = req.body;
         const newCategory = new Category(data);
@@ -18,7 +19,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
+router.get('/',jwtAuthentication,  async (req, res) => {
     try {
         const data = await Category.find();
         console.log('data fetched');
@@ -32,7 +33,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id',jwtAuthentication,  async (req, res) => {
     try {
         const categoryId = req.params.id;
         const newCategory = req.body;
@@ -51,7 +52,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', jwtAuthentication, async (req, res) => {
     try {
         const categoryId = req.params.id;
         const deletedCategory = await Category.findByIdAndDelete(categoryId);

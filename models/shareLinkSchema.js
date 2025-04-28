@@ -7,11 +7,15 @@ const sharelinkSchema = new mongoose.Schema({
         unique: true
     },
     videoIds: {
-        type: [String], // Array of strings to store video IDs
+        type: [Array], // Array of strings to store video IDs
         required: true
     },
     expiryDate: {
         type: Date,
+        required: true
+    },
+    customerName: {
+        type: String,
         required: true
     },
     createdAt: {

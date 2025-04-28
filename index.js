@@ -35,10 +35,14 @@ app.use(passport.initialize());
 const usersRouter = require('./routers/usersRoutes');
 const categoriesRouter = require('./routers/categoriesRoutes');
 const videosRouter = require('./routers/videosRoutes');
+const favoritesListRouter = require('./routers/favoriteListRoutes');
+const sharedLinkRouter = require('./routers/shareLinkRoutes');
 
 app.use('/api/users', usersRouter);
 app.use('/api/category', categoriesRouter);
 app.use('/api/video', videosRouter);
+app.use('/api/favitelist', favoritesListRouter);
+app.use('/api/sharedlink', sharedLinkRouter);
 
 // Wildcard route to serve Angular app
 app.get('*', (req, res) => {
