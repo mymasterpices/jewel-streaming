@@ -36,6 +36,33 @@ router.get('/', jwtAuthentication, async (req, res) => {
     }
 });
 
+//get video by tagNumber
+router.post('/search', async (req, res) => {
+    try {
+        const videoTagNumber = req.body.tagNumber;
+
+        if (!videoTagNumber) {
+            return res.status(400).json({ error: 'Tag number is required' });
+        }
+
+        console.log('Video Tag Number:', videoTagNumber);
+
+        const video = await Video.find({ tagNumber: videoTagNumber }); // Ensure the field name matches your schema
+
+        if (video.length === 0) {
+            return res.status(404).json({ error: 'Video not found' });
+        }
+
+        res.status(200).json({
+            message: 'Video fetched successfully',
+            video
+        });
+    } catch (error) {
+        console.error('Error fetching video:', error);
+        res.status(500).json({ error: 'Error in fetching video' });
+    }
+});
+
 // GET videos by category
 router.get('/:category', jwtAuthentication, async (req, res) => {
     try {
