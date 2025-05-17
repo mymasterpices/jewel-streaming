@@ -4,7 +4,9 @@ const categoriesItems = new mongoose.Schema({
     name: {
         type: String,
         required: true
-    }
+    },
+    tags: []
+
 });
 
 const Categories = mongoose.model('categories', categoriesItems);

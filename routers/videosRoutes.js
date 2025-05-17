@@ -93,6 +93,13 @@ router.post('/', jwtAuthentication, upload.single('videoUpload'), async (req, re
             stoneWeight, gemStoneWeight, category
         } = req.body;
 
+        let tags = [];
+        if (Array.isArray(req.body.tags)) {
+            tags = JSON.parse(req.body.tags[0]); // Fixes: ["[{'_id':'..'}]"]
+        } else if (typeof req.body.tags === 'string') {
+            tags = JSON.parse(req.body.tags); // Fixes: '{"_id":".."}'
+        }
+
         const video = new Video({
             tagNumber,
             price: price ? Number(price) : 0,
@@ -101,12 +108,14 @@ router.post('/', jwtAuthentication, upload.single('videoUpload'), async (req, re
             stoneWeight: stoneWeight ? Number(stoneWeight) : 0,
             gemStoneWeight: gemStoneWeight ? Number(gemStoneWeight) : 0,
             videoUpload: `uploads/${req.file.filename}`,
+            tags,
             category,
         });
 
+        console.log('Video data:', video);
         await video.save();
 
-        res.status(200).json({ message: 'Video data uploaded successfully', video });
+        res.status(200).json(video);
 
     } catch (error) {
         console.error('Error uploading video data:', error);
